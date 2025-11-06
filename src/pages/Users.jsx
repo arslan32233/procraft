@@ -16,17 +16,17 @@ export default function Users() {
 
   const [formData, setFormData] = useState({
     id: null,
-    username: "hamza101",
-    first_name: "hamza",
-    last_name: "hamza",
-    email: "test@gmail.com",
+    username: "",
+    first_name: "",
+    last_name: "",
+    email: "",
     phone_number: null,
     date_of_birth: null,
-    bio: "hamza",
+    bio: "",
     is_active: true,
-    role: "user",
+    role: "",
     custom_role: 9,
-    password: "1234567a-",
+    password: "",
   });
 
   const fetchUsers = async () => {
