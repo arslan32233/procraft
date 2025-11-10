@@ -32,7 +32,6 @@ export default function Users() {
     password: "",
   });
 
-  // Fetch all users
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -53,7 +52,6 @@ export default function Users() {
     }
   };
 
-  // Fetch all roles
   const fetchRoles = async () => {
     try {
       const res = await getAllRolesAPI(token);
@@ -77,7 +75,6 @@ export default function Users() {
     }
   }, [token]);
 
-  // Handle form input change
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -165,7 +162,6 @@ export default function Users() {
 
   return (
     <div className="p-8">
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold text-gray-800">Users</h1>
         <button
@@ -180,7 +176,6 @@ export default function Users() {
         </button>
       </div>
 
-      {/* Users Table */}
       <div className="bg-white shadow rounded-lg p-6">
         <h2 className="text-lg font-semibold mb-3 text-gray-700">All Users</h2>
         {loading ? (
@@ -245,7 +240,6 @@ export default function Users() {
         )}
       </div>
 
-      {/* User Form Modal */}
       {showForm && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-50">
           <div className="bg-white rounded-xl shadow-lg w-[600px] max-h-[90vh] overflow-y-auto p-6">

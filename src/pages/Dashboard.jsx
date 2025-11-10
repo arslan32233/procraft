@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { logout } from "../slices/authSlice";
-import { jwtDecode } from "jwt-decode";
 import {
   FaUserCircle,
   FaSignOutAlt,
@@ -49,7 +48,6 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-[Inter]">
       <div className="flex">
-        {/* Sidebar */}
         <aside className="w-64 bg-white border-r border-gray-200 flex flex-col min-h-screen px-4 py-6 shadow-sm">
           <div className="mb-10">
             <div className="flex items-center gap-3">
@@ -101,9 +99,7 @@ export default function Dashboard() {
           </div>
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 p-8 overflow-auto">
-          {/* Header */}
           <header className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-2xl font-semibold text-gray-900">
