@@ -15,7 +15,6 @@ export default function Dashboard() {
   useEffect(() => {
     if (!token) {
       showToast("Please login to continue", "info");
-      navigate("/login", { replace: true });
       return;
     }
 
@@ -49,7 +48,6 @@ export default function Dashboard() {
     dispatch(logout());
     localStorage.removeItem("token");
     showToast(msg || "Logged out successfully", "info");
-    navigate("/login", { replace: true });
   };
 
   return (
