@@ -98,7 +98,7 @@ export default function Dashboard() {
           <div className="mt-auto border-t pt-6 text-xs text-gray-500">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center font-medium text-gray-600">
-                A
+                A 
               </div>
               <div>
                 <div className="text-sm font-semibold">admin</div>

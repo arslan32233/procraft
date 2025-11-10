@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   getAllUsersAPI,
   createUserAPI,
   updateUserAPI,
   deleteUserAPI,
+  getAllRolesAPI,
 } from "../services/index.js";
 import { toast } from "react-toastify";
 import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 export default function Users() {
+  const token = useSelector((state) => state.auth.token);
+
   const [users, setUsers] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
@@ -23,32 +28,50 @@ export default function Users() {
     bio: "",
     is_active: true,
     role: "user",
-    custom_role: 5,
+    custom_role: "",
     password: "",
   });
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await getAllUsersAPI();
+      const res = await getAllUsersAPI(token);
       const usersList =
         Array.isArray(res) ? res : res?.results || res?.data || res?.users || [];
       setUsers(Array.isArray(usersList) ? usersList : []);
+      toast.success(" Users loaded successfully!");
     } catch (error) {
-      const msg =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Failed to load users";
-      toast.error(msg);
+      toast.error(
+        error?.response?.data?.detail || error?.message || " Failed to load users"
+      );
       console.error("Error fetching users:", error);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchRoles = async () => {
+    try {
+      const res = await getAllRolesAPI(token);
+      const rolesList = Array.isArray(res) ? res : res?.results || res?.data || [];
+      setRoles(Array.isArray(rolesList) ? rolesList : []);
+      toast.success(" Roles loaded successfully!");
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.detail || error?.message || " Failed to load roles"
+      );
+      console.error("Error fetching roles:", error);
+    }
+  };
+
   useEffect(() => {
+    if (!token) {
+      toast.info(" Please login to continue");
+      return;
+    }
     fetchUsers();
-  }, []);
+    fetchRoles();
+  }, [token]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -67,26 +90,23 @@ export default function Users() {
     e.preventDefault();
     try {
       const payload = { ...formData };
-      console.log("🔹 Sending payload:", payload);
-
-      let resMessage = "";
       if (editingUser) {
-        const res = await updateUserAPI(editingUser.id, payload);
-        resMessage = res?.message || "User updated successfully!";
+        const res = await updateUserAPI(editingUser.id, payload, token);
+        toast.success(` User updated: ${res?.message || "Success"}`);
       } else {
-        const res = await createUserAPI(payload);
-        resMessage = res?.message || "User created successfully!";
+        const res = await createUserAPI(payload, token);
+        toast.success(` User created: ${res?.message || "Success"}`);
       }
-
-      toast.success(resMessage);
       setShowForm(false);
       setEditingUser(null);
       resetForm();
       fetchUsers();
     } catch (error) {
-      const msg =
-        error?.response?.data?.message || error?.message || "Error saving user";
-      toast.error(msg);
+      toast.error(
+        ` Error saving user: ${
+          error?.response?.data?.detail || error?.message || "Unknown error"
+        }`
+      );
       console.error("Error saving user:", error);
     }
   };
@@ -101,7 +121,7 @@ export default function Users() {
       bio: "",
       is_active: true,
       role: "user",
-      custom_role: 5,
+      custom_role: "",
       password: "",
     });
   };
@@ -109,7 +129,6 @@ export default function Users() {
   const handleEdit = (user) => {
     setEditingUser(user);
     setShowForm(true);
-
     setFormData({
       id: user.id ?? null,
       username: user.username || "",
@@ -119,7 +138,7 @@ export default function Users() {
       bio: user.bio || "",
       is_active: user.is_active ?? true,
       role: user.role || "user",
-      custom_role: user.custom_role ? Number(user.custom_role) : 5,
+      custom_role: user.custom_role ? Number(user.custom_role) : "",
       password: "",
     });
   };
@@ -127,23 +146,21 @@ export default function Users() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      const res = await deleteUserAPI(id);
-      const msg = res?.message || "User deleted successfully!";
-      toast.success(msg);
+      const res = await deleteUserAPI(id, token);
+      toast.success(` User deleted: ${res?.message || "Success"}`);
       fetchUsers();
     } catch (error) {
-      const msg =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Failed to delete user";
-      toast.error(msg);
+      toast.error(
+        ` Failed to delete user: ${
+          error?.response?.data?.detail || error?.message || "Unknown error"
+        }`
+      );
       console.error("Error deleting user:", error);
     }
   };
 
   return (
     <div className="p-8">
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold text-gray-800">Users</h1>
         <button
@@ -185,20 +202,20 @@ export default function Users() {
                     <td className="border p-2 text-center">
                       {user.is_active ? "✅" : "❌"}
                     </td>
-                    <td className="border p-2 text-center flex justify-center gap-3">
+                    <td className="border p-2 text-center space-x-2">
                       <button
                         onClick={() => handleEdit(user)}
                         className="text-blue-500 hover:text-blue-700"
                         title="Edit"
                       >
-                        <PencilSquareIcon className="h-5 w-5" />
+                        <PencilSquareIcon className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(user.id)}
                         className="text-red-500 hover:text-red-700"
                         title="Delete"
                       >
-                        <TrashIcon className="h-5 w-5" />
+                        <TrashIcon className="h-4 w-4" />
                       </button>
                     </td>
                   </tr>
@@ -218,9 +235,8 @@ export default function Users() {
         )}
       </div>
 
-      {/* Modal Form */}
       {showForm && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-50">
           <div className="bg-white rounded-xl shadow-lg w-[600px] max-h-[90vh] overflow-y-auto p-6">
             <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">
               {editingUser ? "Edit User" : "Add New User"}
@@ -258,7 +274,6 @@ export default function Users() {
                 className="border p-2 rounded"
                 required
               />
-
               <textarea
                 name="bio"
                 value={formData.bio}
@@ -303,16 +318,20 @@ export default function Users() {
               </div>
 
               <div>
-                <label className="block mb-1">Custom Role (ID)</label>
+                <label className="block mb-1">Custom Role</label>
                 <select
                   name="custom_role"
                   value={formData.custom_role}
                   onChange={handleChange}
                   className="border p-2 rounded w-full"
+                  required
                 >
-                  <option value={1}>1 - Viewer</option>
-                  <option value={5}>5 - Editor</option>
-                  <option value={9}>9 - Super Admin</option>
+                  <option value="">Select a role</option>
+                  {roles.map((role) => (
+                    <option key={role.id} value={role.id}>
+                      {role.id} - {role.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
