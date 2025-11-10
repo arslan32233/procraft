@@ -5,7 +5,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import Users from "./pages/Users.jsx";
 
 export default function AppRoutes() {
-  const token = useSelector((state) => state.auth.token); // Redux se token le lo
+  const token = useSelector((state) => state.auth.token); 
 
   return (
     <Routes>
