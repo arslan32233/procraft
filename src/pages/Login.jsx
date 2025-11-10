@@ -17,18 +17,7 @@ export default function Login() {
     switch (type) {
       case "success":
         toast.success(message);
-        break;
-      case "error":
-        toast.error(message);
-        break;
-      case "info":
-        toast.info(message);
-        break;
-      case "warn":
-        toast.warn(message);
-        break;
-      default:
-        toast(message);
+      
     }
   };
 
@@ -43,7 +32,7 @@ export default function Login() {
 
       dispatch(setUser(data.user));
 
-      showToast("Login successful!", "success");
+      showToast("Login successful!");
 
       navigate("/dashboard", { replace: true });
     } catch (error) {
