@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { FaCheck, FaTimes, FaEdit, FaTrash } from "react-icons/fa";
 import {
   getAllUsersAPI,
   createUserAPI,
@@ -8,7 +9,6 @@ import {
   getAllRolesAPI,
 } from "../services/index.js";
 import { toast } from "react-toastify";
-import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 export default function Users() {
   const token = useSelector((state) => state.auth.token);
@@ -36,15 +36,11 @@ export default function Users() {
     setLoading(true);
     try {
       const res = await getAllUsersAPI(token);
-      const usersList =
-        Array.isArray(res) ? res : res?.results || res?.data || res?.users || [];
+      const usersList = Array.isArray(res) ? res : res?.results || res?.data || [];
       setUsers(Array.isArray(usersList) ? usersList : []);
-      toast.success(" Users loaded successfully!");
+      toast.success("Users loaded successfully!");
     } catch (error) {
-      toast.error(
-        error?.response?.data?.detail || error?.message || " Failed to load users"
-      );
-      console.error("Error fetching users:", error);
+      toast.error(error?.response?.data?.detail || error?.message || "Failed to load users");
     } finally {
       setLoading(false);
     }
@@ -55,34 +51,23 @@ export default function Users() {
       const res = await getAllRolesAPI(token);
       const rolesList = Array.isArray(res) ? res : res?.results || res?.data || [];
       setRoles(Array.isArray(rolesList) ? rolesList : []);
-      toast.success(" Roles loaded successfully!");
     } catch (error) {
-      toast.error(
-        error?.response?.data?.detail || error?.message || " Failed to load roles"
-      );
-      console.error("Error fetching roles:", error);
+      toast.error(error?.response?.data?.detail || error?.message || "Failed to load roles");
     }
   };
 
   useEffect(() => {
-    if (!token) {
-      toast.info(" Please login to continue");
-      return;
+    if (token) {
+      fetchUsers();
+      fetchRoles();
     }
-    fetchUsers();
-    fetchRoles();
   }, [token]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        type === "checkbox"
-          ? checked
-          : name === "custom_role"
-          ? Number(value)
-          : value,
+      [name]: type === "checkbox" ? checked : name === "custom_role" ? Number(value) : value,
     }));
   };
 
@@ -91,23 +76,18 @@ export default function Users() {
     try {
       const payload = { ...formData };
       if (editingUser) {
-        const res = await updateUserAPI(editingUser.id, payload, token);
-        toast.success(` User updated: ${res?.message || "Success"}`);
+        await updateUserAPI(editingUser.id, payload, token);
+        toast.success("User updated successfully!");
       } else {
-        const res = await createUserAPI(payload, token);
-        toast.success(` User created: ${res?.message || "Success"}`);
+        await createUserAPI(payload, token);
+        toast.success("User created successfully!");
       }
       setShowForm(false);
       setEditingUser(null);
       resetForm();
       fetchUsers();
     } catch (error) {
-      toast.error(
-        ` Error saving user: ${
-          error?.response?.data?.detail || error?.message || "Unknown error"
-        }`
-      );
-      console.error("Error saving user:", error);
+      toast.error(`Error saving user: ${error?.response?.data?.detail || error?.message || "Unknown error"}`);
     }
   };
 
@@ -146,16 +126,11 @@ export default function Users() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      const res = await deleteUserAPI(id, token);
-      toast.success(` User deleted: ${res?.message || "Success"}`);
+      await deleteUserAPI(id, token);
+      toast.success("User deleted successfully!");
       fetchUsers();
     } catch (error) {
-      toast.error(
-        ` Failed to delete user: ${
-          error?.response?.data?.detail || error?.message || "Unknown error"
-        }`
-      );
-      console.error("Error deleting user:", error);
+      toast.error(`Failed to delete user: ${error?.response?.data?.detail || error?.message || "Unknown error"}`);
     }
   };
 
@@ -164,11 +139,7 @@ export default function Users() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold text-gray-800">Users</h1>
         <button
-          onClick={() => {
-            setShowForm(true);
-            setEditingUser(null);
-            resetForm();
-          }}
+          onClick={() => { setShowForm(true); setEditingUser(null); resetForm(); }}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           + Create New User
@@ -200,34 +171,21 @@ export default function Users() {
                     <td className="border p-2">{user.email}</td>
                     <td className="border p-2">{user.role || "N/A"}</td>
                     <td className="border p-2 text-center">
-                      {user.is_active ? "✅" : "❌"}
+                      {user.is_active ? <FaCheck className="text-green-500 inline" /> : <FaTimes className="text-red-500 inline" />}
                     </td>
                     <td className="border p-2 text-center space-x-2">
-                      <button
-                        onClick={() => handleEdit(user)}
-                        className="text-blue-500 hover:text-blue-700"
-                        title="Edit"
-                      >
-                        <PencilSquareIcon className="h-4 w-4" />
+                      <button onClick={() => handleEdit(user)} className="text-blue-500 hover:text-blue-700" title="Edit">
+                        <FaEdit />
                       </button>
-                      <button
-                        onClick={() => handleDelete(user.id)}
-                        className="text-red-500 hover:text-red-700"
-                        title="Delete"
-                      >
-                        <TrashIcon className="h-4 w-4" />
+                      <button onClick={() => handleDelete(user.id)} className="text-red-500 hover:text-red-700" title="Delete">
+                        <FaTrash />
                       </button>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan="6"
-                    className="border p-4 text-center text-gray-500"
-                  >
-                    No users found
-                  </td>
+                  <td colSpan="6" className="border p-4 text-center text-gray-500">No users found</td>
                 </tr>
               )}
             </tbody>
@@ -243,115 +201,40 @@ export default function Users() {
             </h2>
 
             <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-              <input
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                placeholder="Username"
-                className="border p-2 rounded"
-                required
-              />
-              <input
-                name="first_name"
-                value={formData.first_name}
-                onChange={handleChange}
-                placeholder="First Name"
-                className="border p-2 rounded"
-              />
-              <input
-                name="last_name"
-                value={formData.last_name}
-                onChange={handleChange}
-                placeholder="Last Name"
-                className="border p-2 rounded"
-              />
-              <input
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Email"
-                className="border p-2 rounded"
-                required
-              />
-              <textarea
-                name="bio"
-                value={formData.bio}
-                onChange={handleChange}
-                placeholder="Bio"
-                className="border p-2 rounded col-span-2"
-              />
-              {!editingUser && (
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Password"
-                  className="border p-2 rounded"
-                  required
-                />
-              )}
+              <input name="username" value={formData.username} onChange={handleChange} placeholder="Username" className="border p-2 rounded" required />
+              <input name="first_name" value={formData.first_name} onChange={handleChange} placeholder="First Name" className="border p-2 rounded" />
+              <input name="last_name" value={formData.last_name} onChange={handleChange} placeholder="Last Name" className="border p-2 rounded" />
+              <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email" className="border p-2 rounded" required />
+              <textarea name="bio" value={formData.bio} onChange={handleChange} placeholder="Bio" className="border p-2 rounded col-span-2" />
+              {!editingUser && <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Password" className="border p-2 rounded" required />}
 
               <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  name="is_active"
-                  checked={formData.is_active}
-                  onChange={handleChange}
-                />
+                <input type="checkbox" name="is_active" checked={formData.is_active} onChange={handleChange} />
                 <label>Active</label>
               </div>
 
               <div>
                 <label className="block mb-1">Role</label>
-                <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="border p-2 rounded w-full"
-                >
+                <select name="role" value={formData.role} onChange={handleChange} className="border p-2 rounded w-full">
                   <option value="user">User</option>
                   <option value="admin">Admin</option>
                   <option value="manager">Manager</option>
                 </select>
               </div>
-
+              
               <div>
                 <label className="block mb-1">Custom Role</label>
-                <select
-                  name="custom_role"
-                  value={formData.custom_role}
-                  onChange={handleChange}
-                  className="border p-2 rounded w-full"
-                  required
-                >
+                <select name="custom_role" value={formData.custom_role} onChange={handleChange} className="border p-2 rounded w-full" required>
                   <option value="">Select a role</option>
                   {roles.map((role) => (
-                    <option key={role.id} value={role.id}>
-                      {role.id} - {role.name}
-                    </option>
+                    <option key={role.id} value={role.id}>{role.id} - {role.name}</option>
                   ))}
                 </select>
               </div>
 
               <div className="col-span-2 flex justify-end space-x-3 mt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowForm(false);
-                    setEditingUser(null);
-                  }}
-                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  {editingUser ? "Update User" : "Submit"}
-                </button>
+                <button type="button" onClick={() => { setShowForm(false); setEditingUser(null); }} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">{editingUser ? "Update User" : "Submit"}</button>
               </div>
             </form>
           </div>

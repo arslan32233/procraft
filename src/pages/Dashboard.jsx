@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { logout } from "../slices/authSlice";
 import { jwtDecode } from "jwt-decode";
+import { FaUserCircle, FaSignOutAlt, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
 export default function Dashboard() {
   const dispatch = useDispatch();
@@ -17,7 +18,6 @@ export default function Dashboard() {
       showToast("Please login to continue", "info");
       return;
     }
-
     try {
       const decoded = jwtDecode(token);
       const now = Date.now() / 1000;
@@ -53,32 +53,22 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-[Inter]">
       <div className="flex">
+        
         <aside className="w-64 bg-white border-r border-gray-200 flex flex-col min-h-screen px-4 py-6 shadow-sm">
           <div className="mb-10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-sky-600 rounded-lg flex items-center justify-center text-white font-bold">
-                PC
+              <div className="w-10 h-10 text-white">
+                <FaUserCircle className="w-full h-full text-sky-600" />
               </div>
               <div>
-                <h1 className="text-base font-semibold text-sky-700">
-                  PROCRAFT
-                </h1>
+                <h1 className="text-base font-semibold text-sky-700">PROCRAFT</h1>
                 <p className="text-xs text-gray-400">Restoration Group</p>
               </div>
             </div>
           </div>
 
           <nav className="space-y-1 text-sm font-medium flex-1 overflow-auto">
-            {[
-              "Dashboard",
-              "Courses",
-              "Users",
-              "Roles",
-              "Departments",
-              "Resources",
-              "Book System",
-              "Forge",
-            ].map((item) => (
+            {["Dashboard", "Courses", "Users", "Roles", "Departments", "Resources", "Book System", "Forge"].map((item) => (
               <Link
                 key={item}
                 to={`/${item.toLowerCase().replace(" ", "-")}`}
@@ -93,15 +83,13 @@ export default function Dashboard() {
             ))}
           </nav>
 
-          <div className="mt-auto border-t pt-6 text-xs text-gray-500">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center font-medium text-gray-600">
-                A 
-              </div>
-              <div>
-                <div className="text-sm font-semibold">admin</div>
-                <div className="text-xs text-gray-400">Admin</div>
-              </div>
+          <div className="mt-auto border-t pt-6 text-xs text-gray-500 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full flex items-center justify-center bg-gray-200 text-gray-600">
+              <FaUserCircle />
+            </div>
+            <div>
+              <div className="text-sm font-semibold">admin</div>
+              <div className="text-xs text-gray-400">Admin</div>
             </div>
           </div>
         </aside>
@@ -109,12 +97,8 @@ export default function Dashboard() {
         <main className="flex-1 p-8 overflow-auto">
           <header className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900">
-                Dashboard
-              </h2>
-              <p className="text-gray-500 text-sm">
-                Overview of courses, users & performance
-              </p>
+              <h2 className="text-2xl font-semibold text-gray-900">Dashboard</h2>
+              <p className="text-gray-500 text-sm">Overview of courses, users & performance</p>
             </div>
 
             <div className="flex items-center gap-4 relative" ref={dropdownRef}>
@@ -127,16 +111,16 @@ export default function Dashboard() {
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 title="Account"
               >
-                A
+                <FaUserCircle className="text-gray-600 w-6 h-6" />
               </div>
 
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow-md z-50">
                   <button
                     onClick={() => handleLogout("Logged out successfully")}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded"
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded flex items-center gap-2"
                   >
-                    Logout
+                    <FaSignOutAlt /> Logout
                   </button>
                 </div>
               )}
@@ -150,20 +134,17 @@ export default function Dashboard() {
             <Card title="Avg. Completion Time" value="14.2 days" subtitle="↓ 2.3 days faster" bg="bg-violet-50" text="text-violet-700" />
           </div>
 
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-800">
-                  Course Completion Trends
-                </h3>
+                <h3 className="font-semibold text-gray-800">Course Completion Trends</h3>
               </div>
             </div>
 
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-800">
-                  Department Engagement
-                </h3>
+                <h3 className="font-semibold text-gray-800">Department Engagement</h3>
                 <p className="text-xs text-gray-400">6 departments</p>
               </div>
               <div className="space-y-3">
