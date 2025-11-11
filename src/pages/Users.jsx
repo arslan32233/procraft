@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import { FaCheck, FaTimes, FaEdit, FaTrash } from "react-icons/fa";
+import { toast } from "react-toastify";
 import {
   getAllUsersAPI,
   createUserAPI,
@@ -8,11 +8,8 @@ import {
   deleteUserAPI,
   getAllRolesAPI,
 } from "../services/index.js";
-import { toast } from "react-toastify";
 
 export default function Users() {
-  const token = useSelector((state) => state.auth.token);
-
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -20,7 +17,6 @@ export default function Users() {
   const [editingUser, setEditingUser] = useState(null);
 
   const [formData, setFormData] = useState({
-    id: null,
     username: "",
     first_name: "",
     last_name: "",
@@ -32,90 +28,58 @@ export default function Users() {
     password: "",
   });
 
-  const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const res = await getAllUsersAPI(token);
-      const usersList = Array.isArray(res)
-        ? res
-        : res?.results || res?.data || [];
-      setUsers(Array.isArray(usersList) ? usersList : []);
-      toast.success("Users loaded successfully!");
-    } catch (error) {
-      toast.error(
-        error?.response?.data?.detail ||
-          error?.message ||
-          "Failed to load users"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchRoles = async () => {
-    try {
-      const res = await getAllRolesAPI(token);
-      const rolesList = Array.isArray(res)
-        ? res
-        : res?.results || res?.data || [];
-      setRoles(Array.isArray(rolesList) ? rolesList : []);
-    } catch (error) {
-      toast.error(
-        error?.response?.data?.detail ||
-          error?.message ||
-          "Failed to load roles"
-      );
-    }
-  };
-
   useEffect(() => {
-    if (token) {
-      fetchUsers();
-      fetchRoles();
-    }
-  }, [token]);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const usersData = await getAllUsersAPI();
+        setUsers(Array.isArray(usersData) ? usersData : usersData?.results || []);
+
+        const rolesData = await getAllRolesAPI();
+        setRoles(Array.isArray(rolesData) ? rolesData : rolesData?.results || []);
+      } catch (err) {
+        toast.error(err?.message || "Failed to load data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        type === "checkbox"
-          ? checked
-          : name === "custom_role"
-          ? Number(value)
-          : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
-  // Handle form submit (create or update)
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const payload = { ...formData };
       if (editingUser) {
-        await updateUserAPI(editingUser.id, payload, token);
+        const updatedUser = await updateUserAPI(editingUser.id, formData);
         toast.success("User updated successfully!");
+        setUsers((prev) =>
+          prev.map((u) => (u.id === editingUser.id ? { ...u, ...updatedUser } : u))
+        );
       } else {
-        await createUserAPI(payload, token);
+        const newUser = await createUserAPI(formData);
         toast.success("User created successfully!");
+        setUsers((prev) => [...prev, newUser]);
       }
+
       setShowForm(false);
       setEditingUser(null);
       resetForm();
-      fetchUsers();
-    } catch (error) {
-      toast.error(
-        `Error saving user: ${
-          error?.response?.data?.detail || error?.message || "Unknown error"
-        }`
-      );
+    } catch (err) {
+      toast.error(err?.message || "Error saving user");
     }
   };
 
   const resetForm = () => {
     setFormData({
-      id: null,
       username: "",
       first_name: "",
       last_name: "",
@@ -132,7 +96,6 @@ export default function Users() {
     setEditingUser(user);
     setShowForm(true);
     setFormData({
-      id: user.id ?? null,
       username: user.username || "",
       first_name: user.first_name || "",
       last_name: user.last_name || "",
@@ -140,7 +103,7 @@ export default function Users() {
       bio: user.bio || "",
       is_active: user.is_active ?? true,
       role: user.role || "user",
-      custom_role: user.custom_role ? Number(user.custom_role) : "",
+      custom_role: user.custom_role || "",
       password: "",
     });
   };
@@ -148,15 +111,11 @@ export default function Users() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      await deleteUserAPI(id, token);
+      await deleteUserAPI(id);
       toast.success("User deleted successfully!");
-      fetchUsers();
-    } catch (error) {
-      toast.error(
-        `Failed to delete user: ${
-          error?.response?.data?.detail || error?.message || "Unknown error"
-        }`
-      );
+      setUsers((prev) => prev.filter((u) => u.id !== id));
+    } catch (err) {
+      toast.error(err?.message || "Failed to delete user");
     }
   };
 
@@ -202,24 +161,16 @@ export default function Users() {
                     <td className="border p-2">{user.role || "N/A"}</td>
                     <td className="border p-2 text-center">
                       {user.is_active ? (
-                        <FaCheck className="text-green-500 inline" />
+                        <FaCheck className="text-green-500" />
                       ) : (
-                        <FaTimes className="text-red-500 inline" />
+                        <FaTimes className="text-red-500" />
                       )}
                     </td>
                     <td className="border p-2 text-center space-x-2">
-                      <button
-                        onClick={() => handleEdit(user)}
-                        className="text-blue-500 hover:text-blue-700"
-                        title="Edit"
-                      >
+                      <button onClick={() => handleEdit(user)} className="text-blue-500 hover:text-blue-700" title="Edit">
                         <FaEdit />
                       </button>
-                      <button
-                        onClick={() => handleDelete(user.id)}
-                        className="text-red-500 hover:text-red-700"
-                        title="Delete"
-                      >
+                      <button onClick={() => handleDelete(user.id)} className="text-red-500 hover:text-red-700" title="Delete">
                         <FaTrash />
                       </button>
                     </td>
@@ -227,10 +178,7 @@ export default function Users() {
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan="6"
-                    className="border p-4 text-center text-gray-500"
-                  >
+                  <td colSpan="6" className="border p-4 text-center text-gray-500">
                     No users found
                   </td>
                 </tr>
@@ -248,115 +196,34 @@ export default function Users() {
             </h2>
 
             <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-              <input
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                placeholder="Username"
-                className="border p-2 rounded"
-                required
-              />
-              <input
-                name="first_name"
-                value={formData.first_name}
-                onChange={handleChange}
-                placeholder="First Name"
-                className="border p-2 rounded"
-              />
-              <input
-                name="last_name"
-                value={formData.last_name}
-                onChange={handleChange}
-                placeholder="Last Name"
-                className="border p-2 rounded"
-              />
-              <input
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Email"
-                className="border p-2 rounded"
-                required
-              />
-              <textarea
-                name="bio"
-                value={formData.bio}
-                onChange={handleChange}
-                placeholder="Bio"
-                className="border p-2 rounded col-span-2"
-              />
-              {!editingUser && (
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Password"
-                  className="border p-2 rounded"
-                  required
-                />
-              )}
-
+              <input name="username" value={formData.username} onChange={handleChange} placeholder="Username" className="border p-2 rounded" required />
+              <input name="first_name" value={formData.first_name} onChange={handleChange} placeholder="First Name" className="border p-2 rounded" />
+              <input name="last_name" value={formData.last_name} onChange={handleChange} placeholder="Last Name" className="border p-2 rounded" />
+              <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email" className="border p-2 rounded" required />
+              <textarea name="bio" value={formData.bio} onChange={handleChange} placeholder="Bio" className="border p-2 rounded col-span-2" />
+              {!editingUser && <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Password" className="border p-2 rounded" required />}
               <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  name="is_active"
-                  checked={formData.is_active}
-                  onChange={handleChange}
-                />
+                <input type="checkbox" name="is_active" checked={formData.is_active} onChange={handleChange} />
                 <label>Active</label>
               </div>
-
               <div>
                 <label className="block mb-1">Role</label>
-                <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="border p-2 rounded w-full"
-                >
+                <select name="role" value={formData.role} onChange={handleChange} className="border p-2 rounded w-full">
                   <option value="user">User</option>
                   <option value="admin">Admin</option>
                   <option value="manager">Manager</option>
                 </select>
               </div>
-
               <div>
                 <label className="block mb-1">Custom Role</label>
-                <select
-                  name="custom_role"
-                  value={formData.custom_role}
-                  onChange={handleChange}
-                  className="border p-2 rounded w-full"
-                  required
-                >
+                <select name="custom_role" value={formData.custom_role} onChange={handleChange} className="border p-2 rounded w-full" required>
                   <option value="">Select a role</option>
-                  {roles.map((role) => (
-                    <option key={role.id} value={role.id}>
-                      {role.id} - {role.name}
-                    </option>
-                  ))}
+                  {roles.map((role) => <option key={role.id} value={role.id}>{role.name}</option>)}
                 </select>
               </div>
-
               <div className="col-span-2 flex justify-end space-x-3 mt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowForm(false);
-                    setEditingUser(null);
-                  }}
-                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  {editingUser ? "Update User" : "Submit"}
-                </button>
+                <button type="button" onClick={() => { setShowForm(false); setEditingUser(null); }} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">{editingUser ? "Update User" : "Submit"}</button>
               </div>
             </form>
           </div>

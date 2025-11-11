@@ -1,14 +1,8 @@
-import axios from "axios";
+import api from "../helpers/apiHelper.js"; 
 
-const BASE_URL = import.meta.env.VITE_BASE_URL; 
-
-export const getAllRolesAPI = async (token) => {
+export const getAllRolesAPI = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/api/roles/all-roles/`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await api.get("/api/roles/all-roles/");
     return response.data;
   } catch (error) {
     console.error("Error fetching roles:", error);

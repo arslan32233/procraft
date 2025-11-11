@@ -12,15 +12,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const showToast = (message, type = "success") => {
-    switch (type) {
-      case "success":
-        toast.success(message);
-      
-    }
-  };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -32,14 +24,13 @@ export default function Login() {
 
       dispatch(setUser(data.user));
 
-      showToast("Login successful!");
-
+      toast.success("Login successful!");
       navigate("/dashboard", { replace: true });
     } catch (error) {
-      console.error(" Login error:", error);
       const msg =
-        error?.response?.data?.message || "Invalid credentials. Please try again.";
-      showToast(msg, "error");
+        error?.response?.data?.message ||
+        "Invalid credentials. Please try again.";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -49,7 +40,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to from-blue-100 via-white to-blue-50">
       <div className="bg-white/90 p-10 rounded-3xl shadow-2xl w-full max-w-sm border border-gray-100">
         <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
-          Welcome Back 
+          Welcome Back
         </h2>
         <form onSubmit={handleSubmit} className="space-y-5">
           <input

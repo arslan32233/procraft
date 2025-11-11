@@ -1,9 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
-import Cookies from "js-cookie";
 
 const initialState = {
-  token: Cookies.get("token") || null,
-  user: null,
+  token: localStorage.getItem("token") || null,
+  user: JSON.parse(localStorage.getItem("user")) || null,
 };
 
 const authSlice = createSlice({
@@ -12,15 +11,17 @@ const authSlice = createSlice({
   reducers: {
     setToken: (state, action) => {
       state.token = action.payload;
-      Cookies.set("token", action.payload);
+      localStorage.setItem("token", action.payload);
     },
     setUser: (state, action) => {
       state.user = action.payload;
+      localStorage.setItem("user", JSON.stringify(action.payload));
     },
     logout: (state) => {
       state.token = null;
       state.user = null;
-      Cookies.remove("token");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     },
   },
 });
