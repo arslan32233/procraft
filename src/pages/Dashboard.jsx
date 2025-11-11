@@ -8,7 +8,6 @@ import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 export default function Dashboard() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const token = useSelector((state) => state.auth.token);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
