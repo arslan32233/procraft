@@ -16,14 +16,6 @@ export default function Dashboard() {
   const token = useSelector((state) => state.auth.token);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    if (!token) {
-      showToast("Please login to continue", "info");
-      return;
-    }
-  }, [token]);
-
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -170,8 +162,6 @@ export default function Dashboard() {
               text="text-violet-700"
             />
           </div>
-
-          {/* Charts and Department Section */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-4">
@@ -230,7 +220,7 @@ function ProgressBar({ label, value, color }) {
   return (
     <div>
       <div className="flex justify-between text-xs mb-1">
-        <span className="text-gray-600">{label}</span>
+        <span className="text-gray-900">{label}</span>
         <span className="text-gray-500">{value}%</span>
       </div>
       <div className="h-2 bg-gray-100 rounded-full overflow-hidden">

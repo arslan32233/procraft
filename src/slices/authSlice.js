@@ -5,11 +5,18 @@ const initialState = {
   token: Cookies.get("token") || null,
   user: null,
 };
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-   
+    setToken: (state, action) => {
+      state.token = action.payload;
+      Cookies.set("token", action.payload);
+    },
+    setUser: (state, action) => {
+      state.user = action.payload;
+    },
     logout: (state) => {
       state.token = null;
       state.user = null;
