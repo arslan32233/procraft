@@ -1,16 +1,25 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { NavLink } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { logout } from "../slices/authSlice";
 import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
-import Users from "./Users.jsx";
 
 export default function Dashboard() {
   const dispatch = useDispatch();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const [activePage, setActivePage] = useState("Dashboard");
+  const menuItems = [
+    "Dashboard",
+    "Courses",
+    "Users",
+    "Roles",
+    "Departments",
+    "Resources",
+    "Book System",
+    "Forge",
+  ];
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -28,19 +37,8 @@ export default function Dashboard() {
     toast.info("Logged out successfully");
   };
 
-  const menuItems = [
-    "Dashboard",
-    "Courses",
-    "Users",
-    "Roles",
-    "Departments",
-    "Resources",
-    "Book System",
-    "Forge",
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 font-[Inter] flex">
+    <div className="min-h-screen flex bg-gray-50 font-[Inter] text-gray-800">
       <aside className="w-64 bg-white border-r border-gray-200 flex flex-col px-4 py-6 shadow-sm fixed top-0 left-0 h-screen">
         <div className="mb-10 flex items-center gap-3">
           <FaUserCircle className="w-10 h-10 text-sky-600" />
@@ -52,17 +50,19 @@ export default function Dashboard() {
 
         <nav className="space-y-1 text-sm font-medium flex-1 overflow-auto">
           {menuItems.map((item) => (
-            <button
+            <NavLink
               key={item}
-              onClick={() => setActivePage(item)}
-              className={`w-full text-left block px-4 py-2 rounded-lg ${
-                activePage === item
-                  ? "bg-emerald-50 text-emerald-700 border-l-4 border-emerald-500"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
+              to={`/${item.toLowerCase().replace(" ", "-")}`}
+              className={({ isActive }) =>
+                `block px-4 py-2 rounded-lg ${
+                  isActive
+                    ? "bg-emerald-50 text-emerald-700 border-l-4 border-emerald-500"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`
+              }
             >
               {item}
-            </button>
+            </NavLink>
           ))}
         </nav>
 
@@ -80,14 +80,14 @@ export default function Dashboard() {
       <main className="flex-1 p-8 ml-64 overflow-auto">
         <header className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-semibold text-gray-900">{activePage}</h2>
-            <p className="text-gray-500 text-sm">Overview of {activePage.toLowerCase()}</p>
+            <h2 className="text-2xl font-semibold text-gray-900">Dashboard</h2>
+            <p className="text-gray-500 text-sm">Overview of courses, users & performance</p>
           </div>
 
           <div className="flex items-center gap-4 relative" ref={dropdownRef}>
             <input
               className="border border-gray-200 rounded-md px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-sky-500 focus:outline-none"
-              placeholder="Search in Dashboard..."
+              placeholder="Search..."
             />
             <div
               className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-300"
@@ -110,37 +110,31 @@ export default function Dashboard() {
           </div>
         </header>
 
-        {activePage === "Users" ? (
-          <Users />
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <Card title="Active Courses" value="4" subtitle="+12% from last month" bg="bg-sky-50" text="text-sky-700" />
-              <Card title="Active Users" value="28" subtitle="+8% growth" bg="bg-emerald-50" text="text-emerald-700" />
-              <Card title="Completion Rate" value="76%" subtitle="↑ improved 6% this month" bg="bg-orange-50" text="text-orange-700" />
-              <Card title="Avg. Completion Time" value="14.2 days" subtitle="↓ 2.3 days faster" bg="bg-violet-50" text="text-violet-700" />
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card title="Active Courses" value="4" subtitle="+12% from last month" bg="bg-sky-50" text="text-sky-700" />
+          <Card title="Active Users" value="28" subtitle="+8% growth" bg="bg-emerald-50" text="text-emerald-700" />
+          <Card title="Completion Rate" value="76%" subtitle="↑ improved 6% this month" bg="bg-orange-50" text="text-orange-700" />
+          <Card title="Avg. Completion Time" value="14.2 days" subtitle="↓ 2.3 days faster" bg="bg-violet-50" text="text-violet-700" />
+        </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-              <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <h3 className="font-semibold text-gray-800 mb-4">Course Completion Trends</h3>
-              </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h3 className="font-semibold text-gray-800 mb-4">Course Completion Trends</h3>
+          </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-gray-800">Department Engagement</h3>
-                  <p className="text-xs text-gray-400">6 departments</p>
-                </div>
-                <div className="space-y-3">
-                  <ProgressBar label="Sales" value={80} color="bg-sky-500" />
-                  <ProgressBar label="Estimating" value={65} color="bg-emerald-500" />
-                  <ProgressBar label="Production" value={55} color="bg-orange-500" />
-                  <ProgressBar label="Management" value={90} color="bg-violet-500" />
-                </div>
-              </div>
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-800">Department Engagement</h3>
+              <p className="text-xs text-gray-400">6 departments</p>
             </div>
-          </>
-        )}
+            <div className="space-y-3">
+              <ProgressBar label="Sales" value={80} color="bg-sky-500" />
+              <ProgressBar label="Estimating" value={65} color="bg-emerald-500" />
+              <ProgressBar label="Production" value={55} color="bg-orange-500" />
+              <ProgressBar label="Management" value={90} color="bg-violet-500" />
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   );
